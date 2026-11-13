@@ -234,6 +234,7 @@ $("sh").onclick=function(e){if(e.target===$("sh")&&ls("gm_token"))closeSheet()};
 $("bref").onclick=load;$("bset").onclick=function(){openSet(false)};
 document.addEventListener("visibilitychange",function(){if(!document.hidden&&Date.now()-stamp>30000)load()});
 setInterval(function(){if(!document.hidden)load()},60000);
+ring("r0",0);ring("r1",0);ring("r2",0);
 try{var c=JSON.parse(ls("gm_cache")||"null");if(c&&c.d){data=c.d;stamp=c.t;online=false;render()}}catch(e){}
 load();
 if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("sw.js").catch(function(){})}
