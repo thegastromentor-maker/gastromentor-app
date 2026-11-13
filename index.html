@@ -128,6 +128,22 @@ nav button{position:relative}
 .th .t{flex:none;width:112px;height:112px;border-radius:12px;background:#000;overflow:hidden;position:relative;display:grid;place-items:center;color:var(--mut);font-size:12px;text-align:center}
 .th .t img{width:100%;height:100%;object-fit:cover}
 .th .t i{position:absolute;left:6px;bottom:5px;font-style:normal;font-size:11px;background:rgba(0,0,0,.65);color:#fff;border-radius:6px;padding:1px 6px}
+.lg2{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--mut);margin:0 2px 12px}
+.lg2 span{display:inline-flex;align-items:center;gap:6px}
+.lg2 i{width:12px;height:12px;border-radius:50%;border:3px solid;display:inline-block}
+.dy{background:var(--card);border-radius:16px;padding:12px 12px 8px;margin-bottom:10px}
+.dy.hoy{outline:1.5px solid var(--blu)}
+.dy .dh{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.dy .dh b{font-size:16px}.dy .dh span{font-size:13px;color:var(--mut)}
+.dy .dh em{font-style:normal;font-size:11.5px;background:var(--blu);color:#fff;border-radius:999px;padding:1px 8px}
+.dy .cs{display:flex;flex-wrap:wrap;gap:10px 9px}
+.dy .none{font-size:13px;color:var(--mut);padding:2px 0 8px}
+.cv{appearance:none;border:0;background:none;padding:0;position:relative;width:50px;height:50px;flex:none}
+.cv .ci{display:block;width:50px;height:50px;border-radius:50%;border:3.5px solid var(--c);padding:2px;background:#000;box-sizing:border-box}
+.cv .ci img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.cv .ci u{width:100%;height:100%;border-radius:50%;display:grid;place-items:center;background:#1d2128;color:var(--fg);font-size:15px;font-weight:700;text-decoration:none}
+.cv.pe .ci{opacity:.55;border-style:dashed}
+.cv b{position:absolute;right:-3px;bottom:-3px;width:19px;height:19px;border-radius:50%;background:var(--grn);color:#04130e;font-size:12px;display:grid;place-items:center;border:2px solid var(--card)}
 @media (prefers-reduced-motion:reduce){.rv{transition:none}}
 </style>
 </head>
@@ -174,6 +190,8 @@ nav button{position:relative}
 
   <button id="mic" aria-label="Preguntar por voz"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
   <div id="vp" hidden></div>
+  <section id="s-sem"><div id="sem"></div></section>
+
   <section id="s-apr">
     <div class="cnt" id="acnt"></div>
     <div id="alist"></div>
@@ -188,6 +206,7 @@ nav button{position:relative}
 <nav>
   <button data-t="res" class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/></svg>Resumen</button>
   <button data-t="rest"><svg viewBox="0 0 24 24"><path d="M4 11h16M5 11l1 9h12l1-9M8 11V7a4 4 0 0 1 8 0v4"/></svg>Restaurantes</button>
+  <button data-t="sem"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Semana</button>
   <button data-t="apr"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>Aprobar<span class="bd" id="abd" hidden></span></button>
   <button data-t="hoy"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Hoy</button>
 </nav>
@@ -219,6 +238,7 @@ function hm(t){var d=new Date(t);return ("0"+d.getHours()).slice(-2)+":"+("0"+d.
 
 function render(){
   if(!data){return}
+  renderSem();
   var rest=data.rest||[],prog=0,pub=0,bytype=[];
   rest.forEach(function(r){(r.p||[]).forEach(function(p){if(tipo(p.t)==="Historia")return;if(p.ok)pub++;else prog++})});
   var tot=prog+pub,err=+data.total_err||0;
@@ -329,6 +349,26 @@ $("mic").onclick=function(){var b=$("mic");
       showVp("","Pensando…",true);var fd=new FormData();fd.append("audio",blob,"voz."+ext);
       fetch(VOZ,{method:"POST",headers:{"X-Hermes-Token":tk},body:fd}).then(function(r){if(!r.ok)throw new Error("http "+r.status);return r.json()}).then(function(j){lastA=j.respuesta||"";b.classList.remove("bus");showVp(j.pregunta?("Tú: "+j.pregunta):"",lastA);say(lastA)}).catch(function(){b.classList.remove("bus");showVp("","No he podido contestar. Inténtalo de nuevo.")})};
     mr.start();b.classList.add("rec");$("vp").hidden=true}).catch(function(){banner("Permite el micrófono para usar la voz",true)})};
+var semItems=[];
+function renderSem(){var box=$("sem");if(!box)return;
+  if(!data||!data.rest){box.innerHTML='<div class="list"><div class="empty">Sin datos todavía</div></div>';return}
+  var si=/^(\d+)-(\d+)-(\d+)/.exec(data.sem_ini||""),mon;
+  if(si)mon=new Date(+si[1],+si[2]-1,+si[3]);else{var n=new Date();mon=new Date(n.getFullYear(),n.getMonth(),n.getDate()-((n.getDay()+6)%7))}
+  var days=[0,1,2,3,4,5,6].map(function(i){return{d:new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),it:[]}});
+  var ord={Carrusel:0,Reel:1,Historia:2,Otro:3};
+  (data.rest||[]).forEach(function(r){var L=logoFor(r.n);(r.p||[]).forEach(function(p){var d=pdate(p.d);if(!d)return;var k=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-mon)/864e5);if(k<0||k>6)return;days[k].it.push({L:L,n:L?L.n:r.n,p:p,ty:tipo(p.t)})})});
+  semItems=[];var now=new Date(),tk=now.getFullYear()+"-"+now.getMonth()+"-"+now.getDate();
+  var h='<div class="lg2"><span><i style="border-color:'+COL.Historia+'"></i>Historia</span><span><i style="border-color:'+COL.Reel+'"></i>Reel</span><span><i style="border-color:'+COL.Carrusel+'"></i>Carrusel</span><span><i style="border-style:dashed;border-color:#8a93a6"></i>Programado</span><span><i style="border-color:#8a93a6"></i>Publicado ✓</span></div>';
+  days.forEach(function(D,k){D.it.sort(function(a,b){return ord[a.ty]-ord[b.ty]||(a.p.ok?0:1)-(b.p.ok?0:1)});
+    var isT=D.d.getFullYear()+"-"+D.d.getMonth()+"-"+D.d.getDate()===tk;
+    h+='<div class="dy'+(isT?' hoy':'')+'"><div class="dh"><b>'+DIAS[k]+'</b><span>'+("0"+D.d.getDate()).slice(-2)+"/"+("0"+(D.d.getMonth()+1)).slice(-2)+'</span>'+(isT?'<em>Hoy</em>':'')+'<span style="margin-left:auto">'+(D.it.length?D.it.length+(D.it.length===1?" pieza":" piezas"):"")+'</span></div>';
+    if(!D.it.length)h+='<div class="none">Nada este día</div>';
+    else h+='<div class="cs">'+D.it.map(function(x){var j=semItems.length;semItems.push(x);return '<button class="cv '+(x.p.ok?'ok':'pe')+'" data-j="'+j+'" aria-label="'+esc(x.n)+'"><span class="ci" style="--c:'+COL[x.ty]+'">'+(x.L?'<img src="'+x.L.i+'" alt="">':'<u>'+esc((x.n||"?").charAt(0))+'</u>')+'</span>'+(x.p.ok?'<b>✓</b>':'')+'</button>'}).join("")+'</div>';
+    h+='</div>'});
+  box.innerHTML=h}
+$("sem").onclick=function(e){var b=e.target.closest(".cv");if(!b)return;var x=semItems[+b.dataset.j];if(!x)return;var d=pdate(x.p.d);
+  var dn=d?DIAS[(d.getDay()+6)%7]+" "+("0"+d.getDate()).slice(-2)+"/"+("0"+(d.getMonth()+1)).slice(-2):esc(x.p.d);
+  sheet('<div class="hd">'+(x.L?'<img src="'+x.L.i+'" alt="">':'')+'<div><h3>'+esc(x.n)+'</h3><div class="ds" style="color:var(--mut);font-size:13.5px">'+dn+'</div></div></div><div class="list"><div class="row"><div class="tx"><div class="nm">'+esc(tname(x.p.t))+'</div><div class="ds '+(x.p.ok?'ok':'pe')+'">'+(x.p.ok?'Publicado':'Programado')+'</div></div><span class="chip" style="background:'+COL[x.ty]+'">'+esc(tname(x.p.t))+'</span></div></div><button class="btn sec" id="shc">Cerrar</button>');$("shc").onclick=closeSheet};
 function sheet(html){$("shin").innerHTML=html;$("sh").classList.add("on")}
 function closeSheet(){$("sh").classList.remove("on")}
 function openSet(first){
@@ -343,7 +383,7 @@ function openRest(i){var L=LOGOS[i],ps=postsOf(L);
     return '<div class="row"><div class="tx"><div class="nm">'+dn+'</div><div class="ds '+(p.ok?'ok':'pe')+'">'+(p.ok?'Publicado':'Programado')+'</div></div><span class="chip" style="background:'+COL[ty]+'">'+esc(tname(p.t))+'</span></div>'}).join("")+'</div>';
   h+='<button class="btn sec" id="shc">Cerrar</button>';sheet(h);$("shc").onclick=closeSheet}
 
-document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){document.querySelectorAll("nav button").forEach(function(x){x.classList.toggle("on",x===b)});["res","rest","apr","hoy"].forEach(function(t){$("s-"+t).classList.toggle("on",t===b.dataset.t)});window.scrollTo(0,0);if(b.dataset.t==="res"&&data)render();if(b.dataset.t==="apr")loadPend()}});
+document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){document.querySelectorAll("nav button").forEach(function(x){x.classList.toggle("on",x===b)});["res","rest","sem","apr","hoy"].forEach(function(t){$("s-"+t).classList.toggle("on",t===b.dataset.t)});window.scrollTo(0,0);if(b.dataset.t==="res"&&data)render();if(b.dataset.t==="apr")loadPend()}});
 $("rlist").onclick=function(e){var r=e.target.closest(".gi");if(r)openRest(+r.dataset.i)};
 $("sh").onclick=function(e){if(e.target===$("sh"))closeSheet()};
 $("bref").onclick=load;$("bset").onclick=function(){openSet(false)};
