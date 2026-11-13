@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gastromentor">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Gastromentor</title>
+<style>
+:root{--bg:#000;--bg2:#0d0f13;--card:#14171d;--line:#232831;--fg:#f3f5f8;--mut:#8b94a5;--org:#ff7a2f;--grn:#2fd6a3;--red:#ff4d5e;--blu:#4d8dff;--gry:#6b7385;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%}
+body{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));overscroll-behavior-y:none}
+.app{max-width:560px;margin:0 auto;min-height:100%;padding-top:calc(env(safe-area-inset-top,0px) + 8px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 86px)}
+header{display:flex;align-items:center;gap:12px;padding:6px 0 14px}
+header img.gm{width:40px;height:40px;object-fit:contain}
+header h1{margin:0;font-size:19px;font-weight:650;letter-spacing:.2px}
+header .sub{font-size:12.5px;color:var(--mut)}
+header .sp{flex:1;min-width:0}
+.ib{appearance:none;border:0;background:var(--card);color:var(--fg);width:40px;height:40px;border-radius:12px;font-size:19px;display:grid;place-items:center}
+.ib:active{background:var(--line)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--grn);display:inline-block;margin-right:6px}
+.dot.off{background:var(--org)}
+.banner{background:#2a1d10;color:#ffb27a;border-radius:12px;padding:9px 12px;font-size:13.5px;margin-bottom:12px}
+.banner.err{background:#2a1015;color:#ff9aa4}
+section{display:none}
+section.on{display:block}
+.ringwrap{position:relative;width:min(78vw,300px);margin:6px auto 10px;aspect-ratio:1}
+.ringwrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ringwrap circle{fill:none;stroke-linecap:round}
+.rt{stroke:#1a1d24}
+.rv{transition:stroke-dashoffset 1.1s cubic-bezier(.3,.7,.2,1)}
+.rc{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.rc img{width:58px;height:58px;object-fit:contain;margin:0 auto 4px;opacity:.95}
+.rc b{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.rc span{font-size:13px;color:var(--mut);margin-top:3px}
+.msg{text-align:center;font-weight:600;margin:0 0 14px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.kpi{background:var(--card);border-radius:14px;padding:11px 12px}
+.kpi i{display:block;width:22px;height:4px;border-radius:2px;margin-bottom:8px}
+.kpi b{display:block;font-size:24px;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12.5px;color:var(--mut)}
+h2{font-size:13px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--mut);margin:20px 2px 10px}
+.week{background:var(--card);border-radius:16px;padding:14px 12px 10px}
+.bars{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;height:150px}
+.bar{display:flex;flex-direction:column-reverse;gap:2px;align-items:center;justify-content:flex-start;height:100%;position:relative}
+.bar .seg{width:100%;max-width:30px;border-radius:4px}
+.bar em{position:absolute;left:0;right:0;font-style:normal;font-size:12px;text-align:center;color:var(--fg);font-variant-numeric:tabular-nums}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:6px;text-align:center;font-size:12px;color:var(--mut)}
+.leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--mut)}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.list{background:var(--card);border-radius:16px;overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-top:1px solid var(--line);min-width:0}
+.row:first-child{border-top:0}
+.row img.lg{width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none;background:#000}
+.row .nm{font-size:16.5px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .ds{font-size:13px;color:var(--mut)}
+.row .tx{flex:1;min-width:0}
+.chip{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;color:#06080b;flex:none}
+.tap{cursor:pointer}
+.tap:active{background:#1b1f27}
+.empty{padding:22px 14px;text-align:center;color:var(--mut);font-size:14.5px}
+.pill{font-size:12px;padding:3px 9px;border-radius:999px;background:#1d2128;color:var(--mut);flex:none;font-variant-numeric:tabular-nums}
+.ok{color:var(--grn)}
+.pe{color:var(--org)}
+.er{color:var(--red)}
+nav{position:fixed;left:0;right:0;bottom:0;background:rgba(10,12,16,.92);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;padding:6px max(12px,env(safe-area-inset-left,0px)) calc(env(safe-area-inset-bottom,0px) + 4px) max(12px,env(safe-area-inset-right,0px));z-index:5}
+nav button{flex:1;appearance:none;border:0;background:none;color:var(--mut);padding:6px 0;font:inherit;font-size:11.5px;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button svg{width:25px;height:25px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--fg)}
+nav button.on svg{stroke:var(--blu)}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;z-index:20}
+.sheet.on{display:flex}
+.sheet .in{background:var(--bg2);width:100%;max-width:560px;margin:0 auto;border-radius:22px 22px 0 0;max-height:88%;overflow:auto;padding:16px 16px calc(env(safe-area-inset-bottom,0px) + 18px);border:1px solid var(--line);border-bottom:0}
+.sheet h3{margin:0 0 4px;font-size:20px}
+.sheet p{margin:4px 0 12px;color:var(--mut);font-size:14px}
+.sheet input{width:100%;font-size:17px;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:#000;color:var(--fg)}
+.btn{appearance:none;border:0;border-radius:13px;background:var(--blu);color:#fff;font-size:17px;font-weight:600;padding:13px;width:100%;margin-top:12px}
+.btn.sec{background:var(--card);color:var(--fg)}
+.hd{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.hd img{width:52px;height:52px;border-radius:50%;object-fit:cover}
+.cnt{font-size:13.5px;color:var(--mut);margin:0 2px 10px}
+@media (prefers-reduced-motion:reduce){.rv{transition:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <img class="gm" src="logo-gm.png" alt="Gastromentor">
+    <div class="sp"><h1>Gastromentor</h1><div class="sub" id="sub"><span class="dot off"></span>Cargando…</div></div>
+    <button class="ib" id="bref" aria-label="Actualizar">&#8635;</button>
+    <button class="ib" id="bset" aria-label="Ajustes">&#9881;</button>
+  </header>
+  <div id="ban"></div>
+
+  <section id="s-res" class="on">
+    <div class="ringwrap">
+      <svg viewBox="0 0 220 220">
+        <circle class="rt" cx="110" cy="110" r="100" stroke-width="15"/><circle class="rv" id="r0" cx="110" cy="110" r="100" stroke-width="15" stroke="var(--org)"/>
+        <circle class="rt" cx="110" cy="110" r="80" stroke-width="15"/><circle class="rv" id="r1" cx="110" cy="110" r="80" stroke-width="15" stroke="var(--grn)"/>
+        <circle class="rt" cx="110" cy="110" r="60" stroke-width="15"/><circle class="rv" id="r2" cx="110" cy="110" r="60" stroke-width="15" stroke="var(--red)"/>
+      </svg>
+      <div class="rc"><img src="logo-gm.png" alt=""><b id="big">–</b><span>programadas de 38</span></div>
+    </div>
+    <p class="msg" id="msg"></p>
+    <div class="kpis">
+      <div class="kpi"><i style="background:var(--org)"></i><b id="k0">–</b><span>Programadas</span></div>
+      <div class="kpi"><i style="background:var(--grn)"></i><b id="k1">–</b><span>Publicadas</span></div>
+      <div class="kpi"><i style="background:var(--red)"></i><b id="k2">–</b><span>Fallos</span></div>
+    </div>
+    <h2 id="wk">Esta semana</h2>
+    <div class="week">
+      <div class="bars" id="bars"></div>
+      <div class="days" id="days"></div>
+      <div class="leg"><span><i style="background:var(--blu)"></i>Historias</span><span><i style="background:var(--grn)"></i>Reels</span><span><i style="background:var(--red)"></i>Carruseles</span></div>
+    </div>
+    <div id="fall"></div>
+    <h2>Próximas programadas</h2>
+    <div class="list" id="prox"></div>
+  </section>
+
+  <section id="s-rest">
+    <div class="cnt" id="rcnt"></div>
+    <div class="list" id="rlist"></div>
+  </section>
+
+  <section id="s-hoy">
+    <div class="cnt" id="hcnt"></div>
+    <div class="list" id="hlist"></div>
+  </section>
+</div>
+
+<nav>
+  <button data-t="res" class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/></svg>Resumen</button>
+  <button data-t="rest"><svg viewBox="0 0 24 24"><path d="M4 11h16M5 11l1 9h12l1-9M8 11V7a4 4 0 0 1 8 0v4"/></svg>Restaurantes</button>
+  <button data-t="hoy"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Hoy</button>
+</nav>
+
+<div class="sheet" id="sh"><div class="in" id="shin"></div></div>
+
+<script>
+(function(){
+"use strict";
+var API="https://n8n.gastromentor.com/webhook/3e48b2b6-1439-47df-9a7c-009167a10f8f";
+var LOGOS=[{"k": "duotapas", "n": "Dúo Tapas", "i": "data:image/webp;base64,UklGRioCAABXRUJQVlA4IB4CAABQDQCdASpgAGAAPnk8m0kkpCKhJzv4SJAPCWkAEVN+3ZAtYDqF/nv+o7gD0A0gWMb/YfbN9IP8X46Ppn2BP5Z/VP+IM88n7OKg6byR2F/F4z8QKbHw6bWXS4IhUJpCfqMRFfPKB3mMHo+h4YVMvtYQkOQAAP77nMAGrokri7IWmLsxv089mLsQWzENp4PRfKaqP1/xhB4R7AG0n3T593M4t/TsiPKX0/1TAVDMp8MqlhnLp8Wor6QW3fcURmsmZ/mIuJWM5R6cvZ8+5nScPrW2aYsdyRbDPAdWe/zsnh3aBHimuS2gs8CdfqinJRmND+Oof0pklKSwuRfg0rfyS9KXb0TjTkGx/70x3N0Vib9EYMKL+u3ZVfb+pOfyQKOQdbybv+M2d9bI2mZjXvw1REQVt3eLCzWybz95H8WaVdOV6Yw+Wbes/92o0QQPflq8CbdcNoRulQ/fTjjD7M2jDZdFh5wq7dx5hZSKjEfYyB/Wl8EuFXRXuz/XyhQBbe/v6JyA7tKzvCpEIStfnJj2L9n48P/vBDrezXy/rHU06UEj0Pbd/OeNcinsjxDNFLrXWPyCz34XVO0oSo8f6WkikNoLwWMDnSOOX26U2XMGl8aeqLwr8kzotkRvWI0Xd6pNXnYDmXw9MK6KGkxUeGtGtHQgHgrM9FII9ByJndNYfxMOPyX5vbKF/U/2wf8T+RWHk+lA6bZUBQIOa3ykgAAAAA=="}, {"k": "terraza", "n": "La Terraza", "i": "data:image/webp;base64,UklGRm4CAABXRUJQVlA4IGICAABwDgCdASpgAGAAPnk8mUmko6IhIcqYkA8JaQASB1ETDMLje9j9I5zPQw9UDJ7wA44Yzs0YcsokTRJuYcDWK/GRLnD4VsTAKStIjvpeEWRnYBxWYoNZb/hsDz4/KxUiALX/fnRxdrKhFYhj+vJMbZWPBMI/v7NPNq83u8gAAP78XNAQFf2oO5zkQBaPysdXTWqBNNEdhRCnRX8h71tUnmUQ53jzv87BT7K7OQ0P2xwfZA+Mbzdygfm8WZhgb5kAXXenAk3l1Wp1TmBnErPIr526JhfxVoM4vt+kbbvXuV1aufb6BvDYIlY7X0ueSKF9b/nLH6SIfvxxRzosFSZV/rI04/pS3hhT0/jqnhJmvL9cq/s3nBJC9nxQsf+6jx1/rABD+SvTkI+Nyeh5AQ9OC3JR2ivNg/1EJHMAsuGsbNu0UuZEv7kS/dD9TJX3bm7h/DIbSMfVn70dxtunh5ra7w51QzauV7zlq9s44ud0NjZKwEMJYfGKHCm2Rrpbr8nRnEWagGh1awmrmqVluJluhOZlTXlmtFY8O5UZoWdd66RmS9775Pr9oKjRoiuGWc8OkM+ZSNiVer2NmQbjbPS2iO3Stqa3JDMe4uqych+/7UWhV8yDco0uXyomRSZDO764US0DpsESQQ0484NZXq58V4Y3erDjf9LXW9OjKm5rhEal+KtAxSwdoGC6hlkfMDugdeHTBHVahFWkpkUTRoJOQrAZyg6SQFasUYpc9RmJ8lV6iSuNnPUpMdaqdrHhfGwB1TBjYCDh8ozxa7EA/p9lNSpXtxRr+X65cUxxILNi2gAAAAAA"}, {"k": "sardinero", "n": "El Sardinero", "i": "data:image/webp;base64,UklGRgICAABXRUJQVlA4IPYBAADwDACdASpgAGAAPnk8m0mko6KhJzQISJAPCWkAFtzqV8/KiCaAfx7/Rd6J+u+gH0z/tfnEalX/L+jh8u+bX529gX+T/2MZ55P2cVB0xdCh+jLuvu3DYsU02T2C0YC9RdVe50mc+e1vUkSdFspUXx6wAP77nMAk/85+M6wRSrUcKR+vWMm/8u+ysuA0Mow4J64O86EjJCz1EaklY2JLfBT7QxFvk5UrYgW2T0o0kFqezijHDeYAoktH1ZqwqFvMY/P93H/BbMVcGsIaZFC1aQvIYE44Mb3AVrjzvSH6UK4q1SJ9d3BF2e/iKnuZ4LR4qpwK02yH4ErcZ+VTow/HEOl9ynOaG/IbqSwtS74OELg76HedUsFPWwS6GIIcPRm+9cShDW14KRA3Y79dAFVZK6G4Sp7y9Hn4/S0oAeoA8vvjOwI8ZkRNskxnQRK1NBwSkDZo/g7Hjsz2CHM8pu55E3/sERlk2dOGsBqwoya338PFYqU4RbK58I1bLCLFG9BDbl3OnrR9XR73n4VJ0OT82sFo3TWYsEpFCcqiuIS7sX+H4lbR/Bo7vKGsTmlXKhn8rEu8nXckeIyGQizbJPxXoNws4LSu6683P/Rmc+W376dN58bqaxMDN7LwUrY/KOEDKLPPFuPyJQ2dff88JzysjNfG+4AAAAAA"}, {"k": "rico", "n": "Rico", "i": "data:image/webp;base64,UklGRlwBAABXRUJQVlA4IFABAACQCgCdASpgAGAAPnk8m0kkpCKhJzgISJAPCWUAebAQV7XAr20/PIHgDK8G7g6tYQkRPlxYLJjRhf5GQ8onEOaF6Ch5Oyk1l5GG1QfQRWHLZrpP4C5HHUmpBE7KCAAA/vucwAVGe7St8Z9UB36Vx3A539nIbROaIv8Cef7pANu0u8s6CGDW0T7htZB4gyKnxASidvw7FY6kb/kXNRuDazlu69m523+rMygyU2w1oh+3uKrCa3VyYc45hJRHWb9Zc3dNgLWivgVddFwkGTw8TTPVb8uWh+v2gr/3wnrho0I99AnmsyF4977Xe5p5KQMHeUBAq40S0BNhhyF4UOI+HCcjLllTMCu+exBxuhW4jYXluJk3nzIJA2K42IPwTirY6K3JGr7t4JrMSLAfCSujABIjmeGyg91GNMCencgya5USj9hXI+6bUbGgFutpKgAAAAA="}, {"k": "tipico", "n": "Típico", "i": "data:image/webp;base64,UklGRvABAABXRUJQVlA4IOQBAADwCwCdASpgAGAAPnk8nEkko6MhJXgI0JAPCWkAE90/SazXnE/7jjsPog1iX+15F3ny+k/YA/WgXrdJI/bpHqVnJcVzLT11e27ZBmxKipDgdQ3K7LvcaYUoTxLASL3GAHCo0ii2HZFtAAD++5zADb9ZdwBUWIf4t/ggZKwH2iyQP7t2feciHqbIghuuhsTeufaxRWi38NeOOeMEduh85PHypkqidlbOP7r/LrYojr+RRmQzKM9EaAxkhxISuPEAD/WAcFvvVOBsFEwIOGLUu+d3/VP3mYZv/sp4aT5/4ldymZ/jEOfKpH00gY2vmhe29leWIYhXRAufi21mf+i5GOBPVcf3MxjNqz3YTkWTsfBi3TLz//+LDMdz/sYziABdrqJdFNhGXhpnXimRS3K0fLB8T75VRdyr4WS4FzfwqzkXFS9fuuLF8kW1nnP77Ow6D9eBydZAAYMUtAYRvRXknKzhfx85OnnGwcLse0jbxMJvO5/1SegsS54VH+IvLdMwzFtqjV22GwZzNomOzCX+2PKv+W3D+SfO1YWk2/+7c2qjln9UD/fjlL7dx2jGJuy+JwyvLbk1aN74lIWyWzQxqbs9iCUvnv+eOwyDC8P/x7IvaRqqhaqNPVYH7QYUfETelAAAAAAA"}, {"k": "hermanosguadalupe", "n": "Hermanos Guadalupe", "i": "data:image/webp;base64,UklGRkoCAABXRUJQVlA4ID4CAAAwDQCdASpgAGAAPnk6mUmkoyIhJXVY0JAPCWcAVetTvn4GMa+wd4MoH2q+gHDn3g0bn+Q9NbOa9Cfrn8AH6qeluMgi4cmdJIJm3qOgzX4Tx3f0aEZrLeVz5Q02nr7nO3BxWcE4HqRSB5KLm/uvB5JH7RAA/vxc0AEqyvRPPmdLOXGeRTkEPTf2JChzxy/o74ndMeJnmmm/2vXeWtSCo8oTYl++kDjuKP/9TbzCoAmmj8rcKov/Ftdc/s9LqWXXakGudOJx3DmEd/nT0F0jGSq92xCy8UOu4rwq9BADyryjIjAtU6foo4xXR+R6JVbXR6Cd902MTKKCkMO3ax3Xn41R2bjZOE+ln2dZnwGG/KqkmOOdDTxd2RKxd0V9qkjBi9NargQ2Mebq9InBi/pik9SjKjikKYF6b2XzR1vAJnl1uIsk5Z13Var18tue95f969xb10R7im33EK6cCr5WFQVh2g9Che9ngBy7UfTV/DUTFcc1DnlpZaJB3KNdOGfe86I3812DeZIezBerHFgeZsDDTr6fVmA81O1r3+e4GzF7SU3Qejtk80/WHnlk6ffBPg6/Uo/iR+8rdBTObbGi2Z/3PqtxALQy1oCfpcRo53Bisg9+c5BzisXm5+9Ikk9MKKTvb3n9CUpQ4HCh9Faurb8hvw493s2HRgT5uIs7d/+Lgx8GOGtj97gd1rxBCrEm8TTtTQNEnPhteYcFQ8J77luPh4KctfpkMW3MUEaVxxC8dg3ZQkQxLhcLBLwAAAAA"}, {"k": "antojo", "n": "Bar Antojo", "i": "data:image/webp;base64,UklGRtYCAABXRUJQVlA4IMoCAADQEACdASpgAGAAPnk8mkmko6KhJHZpCJAPCWkAE87/S/Avw1+NPYDi0PC/aT7N+VXIDtOf4PeCOQdsfIceQH9J8AaNzzwe0D2lfPv7E/AL/L/63vrgzwdWsISImxFv48OGo1hG7dgDOago7QjB0xXgLRaqt06q0QLi6N1TgoC673tmFpf/e5ckJ0HVrCEcgAD++/1QJXn3Fb66uIlCNAbI9A7OwwCA92WJFTvaiVkWLpNQ/T/gTqP7y0uCriYhty79n/q3W83isaOCKQE2C0OLhZOVooSYekbE8XHXk9ffzGuyji/8Wy0G4NZP6MUw1BVT9lgXLWfT6+c2ty5FOrtx+67s0uuFnVUVLlRv/iM+/7Rstckj7M4XkNeklDNqC0TeCdm7uXVVRQAtqt4Vw+P9Ji/PawJH6ukXJ9Ysm3GOMc+29iuclUBcwFqd9J2HOO1dk8Av+ZvByrzzO8g3Lr8tjHVWC0JAU6//tR1tbZZxJnsrBqh4cemyP8ViEleQQaBXrEfgIx6i7XSNL0X1PwA+86sZTRUUrtB0Qo9Gm88526drGCN46AUHE+/5az9wo/8qGjdBncxggZZ3U92nX185av3o9xN6fudCgGzcGS2YTwh5EDNV+GYhOZT2Dg/wSRlUf0paLza5M4NyvsTnpJvHPdg7P1w0Iou6tOc2bNTybZ/khzssh+em5eW7faFTYTD2c00j6KLejTJpqnF/Ks6y20V6+qMmNuW5YMklPyFqkvdQLXHyuPd7l2Gd06c7kbvgh9aoN/+t4tYqEDACWD0STtuo1rnbkJXZsZ9mwkSEIJ+VWbgVDijd56c/Xhw9LmubAspiKPH3sNB0UpULpAeCOAowpPyhcNZAV7QQ3KAotnZETXPYomj/SIYVmPj3D+9zn/ALMwV/ULQEiNUaOv6F3HC65vwPqeEeX7wf8ljqa8z9yHtoAAAAAAA="}, {"k": "perroviejo", "n": "Perro Viejo Sevilla", "i": "data:image/webp;base64,UklGRlgCAABXRUJQVlA4IEwCAACQDQCdASpgAGAAPnk8mUkko6KhKBVYAJAPCWcAV2JU/FAPUa3lCuy/tPQEI4zEFOY/mf2QfAb/mdYY/r3mpZ1Pxv+/+wJ+qoos43KiQxCfpGuQAjLAdgCHjCrQ+W7t4imzFzZE5FPO7XlCTO95+eORFspUWIAA/vdZL/8RdPd/+3//5xL/6Bf+Avdab69wMTxgFBYISIMiSfBfFqSzXWDLTcl9n5m79ui47qcTEKHQ1Blq3dFWMSpsx/5w7CuA6njL1AEJIMMHhNvfKH3e2Dy9200Ma5neawfXsLyIm4GcT7xGhvgak+134JU/SFEgCjFAAHVZHH3nl/epL5pIfxyRJYCwMFCJYKtY/1D0Ub2Chh2PNMmRQQOrzTgzThPAfw1k35WPNR+iQZeg5hq7rEs+9iOfnwXFx2vYugr87mWRuavs88DYaI/nEcXdA85SjmsBABpG6oySpo6MTPKQBtHohP9QTSRtY4ndHpxSV8xOU7PFmA0XX4jxEASKtvT3Hf+nuCa3U1JL7L0qVqYtynHFyTSSYp3fiR8LAZP2Ah/8mbfSVz8DMPbFnXXOed8REbKlf7ahY/HXfi/6ShgrSda/n6OZftbHt2RJrmBrMxhM67qUfgyip0qZYoZHQKrWxuERhcufcPFvZ2GWHl7Z9V4MQbxyhTeXyJ+d38i5uBeYHsqsYD3sBe8T/yfipp3ADgJhUUKlCprP/0rfStLYBbTEejfBXkJa2gbRZF1ApAeql3za3by8WaRvilvt8dKfMx24z/+e4VTM7UAAAAA="}, {"k": "lareme", "n": "La Reme", "i": "data:image/webp;base64,UklGRroDAABXRUJQVlA4IK4DAADQEwCdASpgAGAAPnk6mkmkoyKhJXqo0JAPCUASgBqwvdrwe4rGA24HmN8Gb3Lbw76AH6c+mj7Gn7Zfrt7V1YO5Se9/s9xSmO/4jhBlOu0n0K+nnmEf5DycuQA/jP9i/V/2Es9v0t7B365b6AOFcRRbDsihJstO3gRTWzY7jJ2CISy7EKzYK/MDlDXbw1/wv5EJ6CFUQhwHXXpOoMTQeO4SgocERRaAAAD+9IiH/CruYv3V//3qj/7hj/7hj/2wAAlVXacrQquVndx3ipWZ/HCf3aNPbi82VWzdyZtqUj+JKtUPfjrChVL7jY8/9tAf8RMZlsOtaF/uCr4LPUPn9lfwqM36jI19wN2R/z66r1w/m3mO1NBDpLJc9dOUegeue3hdf9tpR+NNL3B+bqsIsnHSTxPoM5sa3f6yrys2HOd5uxIab/FUfp/fziAAj7S3+qHzh7UTpVvK5zsV7s4dbT1/kwSIeaNFNPjm7QbV2HiTZfdSfBAcXDFOrruid931I8eUMDSEobwb98QPB1e4auKHHQQdG6iFluCljxFA7CLfeGEy8YKCTq2WKPQ2PcvRU1LssvswDXqqynZZ/uPXNTnpvP1WnBC2vr85luV1Ldfvx+nD+GQ9a06A1LO/LN1Ihb+Z+rLmP2m+MzLsBCJeSNK7FEjfC2ld6DilTtHmk+WNrthc7AdHcTsIMzeqaTXtUrPJ1GoH+E/wlpllK6d8LsSa9sKSA8XyJnNrxfwdhHy8AwhI7Y8uJCtPUskc6enbrNACFcVgq35+NSqLG+8iVIqryH3JKf42nGBB3urN3/Lpkh/r94+zHOdWm+13ypo6CowxNj3nGRzcNw1ygZi1jRgUO8kSE+SZrN23aza+Jv4Venf9WzEc7ao6jK0O3eAcLlxetPeDte71FgN5TM9v8N+SijJ9uHu0oy5e/2GCJB/v/t21aWkyyQMTXMRpI13dTblKqUn4v0OWgJ/gT3VNyZi+aIi9Va/Zabnd2/G1ksayZJEimqFHi9RJK/LtLzs5Y//CaIWRIJvm3DFU4Af/DMzGm4WfbZQ4RyWwP9M+HRTVda0tRV1GxTKrwq5VwdFCz3jW6fM0mc6fZCqv4/jTZXhMVtmTccadmN31RNd56iTHCktXEMDlr2ctmIa7zpd4WFrbkyG/Obx0dR3pVAAJz8/zxMOVr+ORyGVdbWvt6uJUKt+TH7p7fWDEh0V9UdQqln/BdptAvGTWAUZxzW4Q5AAt9dr5bZ+szuACAAAAAAA="}, {"k": "perroviejomalaga", "n": "Perro Viejo Málaga", "i": "data:image/webp;base64,UklGRuQCAABXRUJQVlA4INgCAADQDwCdASpgAGAAPnk8mkmko6KhIcmokA8JZwCVA1OiwC6DOI7ZbndfQB0J/qG7zF/pK+p8OLwDdLZCs+l/wGvzdu+o3/RPOXzcvQ//W/t/wC/q91qhULQ5EXCkg1WA6236fvd4Kgph3wGeuY1DUbIcET1ul/0ozyt7Xc+xpNpmcgTQURFwoAAA/vOk//8KzupZrxv/4hxdC6MkgAIjCbd5TKdldn9bxr+huAMNCebut2bYKD7igRxwHWhD0GtDJ+NkQWnMbyEoVUL/IfowkeVUsJpMfnGu6dv8G07vBsqQ8BHX3GzGGGprvnX4fqK318+HJHu05xrZLHQnLh2FSoAcOAF8G/uy8ekayIm4fZ+enJWIiQ6c4OqTzrjb3v/fnbrrLnuEYrpqi34rze9xOQOLca8KJV5B1zI95W4x32rmfxcL/7LLo+4xI4mXaAymzSMa/PKGCPp2wBqxXPiVqOhthBkduqyP/5Clk0GxNV+MG7EF6XB6OkLHhU+Jh/800c23n7CmjEqTK4eSyZUY8L3bU79iZ94a/kFCf/Z82f/LJC3NZZIuFwrrbCDb5Wew7krnieQ5x3uyIv/ZPg5R9KxrWXwwF188uNITj2KA9kXUmI/6Y8q3A2f3Zv7PILocQHMRMDsfMSCLVtWf6Bao+7bHECq3rWuczH0eAwG/7gVM8lX9FTPNLBeX2sGu5mMH9KKSdQHvHzGnOhKy96L0NaIHsJaM1rRUi46rP/tPI3n+ocepPZWC7PYihphseLLVv8yVEYn/x30G7zeHjPKa+XNjxCU6Nc7fxN548yeRa5lVPS24gsH3fF6AD71DxWk3Rn8cdGVe/QprE3c8M7zVmvnE/4tsBT2eYfa092QjfJ8gnxECErYqzBCO/8pNJFVNKFf3XL1gWNrDhP2A2xTGcMetDNojEmRcmoUSfD/Pqu8dCLIRQ/bJeftefLNY/clA60MTQguAAAAAAA=="}, {"k": "peztomillo", "n": "Pez Tomillo", "i": "data:image/webp;base64,UklGRtgCAABXRUJQVlA4IMwCAAAwDwCdASpgAGAAPnk8l0kkoyIhI5QLgJAPCWkAFtesyKyCzvGB2BBjvc7WBo6fVL/oPGb9D+wP+tXWnLDbBObIU2bP1x9Rq+pUrEH/WOq8v/OYtNiDsbG6XifHYzE9ys6uIDPf5N6TJYOxpCbrxRBMvqEAnhPKUVkfaSKYz8zR4dIAAP76V0kfqL5623kk7LzTClRPgg4ekNx7zbOIcX4euxTa2kWH3QbbQ6fAGzjKeHI/7yDOpE4znqWi/4yu6L/vlfae913p+IJpPV4dnxA5ZPYNiDyM/M8fmyrL+XPeXvp08DYqN6l87UoDooQszgxa30Xu78dWSOf/mYa+dH/HBG6We1GaPjc0B3KxQ02/uiW89iqXPdCQRvr0099Bx0zeJb4iNt4Z/2ry9VWff+Jap37MDZtqvm6JE/uyENTwW+CFLIVD0kf4lLfdGi/qJmDQyyuahy2Wv4iK1zKJ7dHYXyq7XaN9ZYPXwulN9Xq5eH+UfqbMw/Al3fqJFD3T+6wn9Yi8L7eb8Jb26ZcMhe7NZP080lOT7qZKCmI2KOAZ1R2pfLkNL28mokWt46sT5Z8X+t/c15OshStJpmJsbDd+wWKeHtLIdrB/PW3u4U7sVZ4p4VQI5x9UFLgMYZiuYxfCeKfk+mZmDh9NMGAYr9P9K7VOkLktH6S6LIFG+thuWJtqBk+cU/PR6NmIb6xoolXmDaTI6fTUeoBbKn4l7W6cn9WH1oxhlhtzjH1nYHvb0og6DOohdEyUacLgm2zWqP0OX37v1a1us+1+pPn0SnRfLoulVUo1ZMsrGM87K0xnuig1+GnMjnf07yIgIzh8/2UV0xk/nMqctwPbxIpO1B9/wE/3t+1EEMzSN4LL5E/aPWYeLxevV8SIKR433Qnx7vnhvAn/nRspxAUmz3XKbGgQGiLug6FHxpbPot6QaM4soXa4Z1BQr8X4AAAAAA=="}, {"k": "casamaestranza", "n": "Casa Maestranza", "i": "data:image/webp;base64,UklGRjgCAABXRUJQVlA4ICwCAACQDQCdASpgAGAAPnk8m0kko6KhJlbYkJAPCWkAQ+ZMmX1XnwkM/5GBArmTjBuuf0l9Znnd5ovnP/ke4T/LP62IzHTSoXyZ0KKJIOVsK4Ij6z5GGojlwSkuu2U1squp+HN13Pn83pLcXA/8VDbR92IotDkROAAA/vWIv//Fvwb9kYzgVpdbcUUHiJCSR+arcjGZ0K/sGpocKR857iXWbNgrq+/uN/AOxXTQ4F4/XrI7+2xzJtTif/qrciIcOZrCWZpDybMRu10EySXWmbrSSovHK+xC4+PX74ZDxfYiNLKnmHTqLEnNZqmpj5A7Xx9CTtcQiCAxvEK4z/rncFCld6EX0pbOaES5PF2znBMhwTtoV9WlG/dIUQlsMSv/CJkLti5XCwQh6yv9GmgsCihVcWsRkvJJEB/nWFeY3M+Oyz+okBNnLT5WmJp87+5eMN3DNTvXXw8PnkJYJomAE6ZXvcZtSZoLTxfvAT3xRd0GOqz/mZ82n3iMPGx22fNN7HOiWm7995m6xx+Jeo9l+cuBXFvM/cZWvAB3RY3+f7pn/Yo6q0foWftrnVl4doEFAdMyZYu2OIT7twbQbVRQtXcsvv2iXhTVPPURjuhxr2hHMv7hfLNytqY+d5q/VZO26d75xJMsYcpoIgWFiYqKwMtpds213OLuI/r9fJjoJT7mH0IcnRdZuni1rXNx99jhL42oagzjdPc3VkZ7XQaz+UvTOPQctXmuoBF059gAAAAA"}, {"k": "verdelimon", "n": "Verde Limón", "i": "data:image/webp;base64,UklGRp4CAABXRUJQVlA4IJICAACwDQCdASpgAGAAPnk8mkmkoyKhJHZoyJAPCWMAeHP5C3DY2eo/bAeYDzuvQbvD28Ur8FavLL4r+8Gi79E7PC9SCgmsvTpw0J/RufQ2Q6deVZP1BXAm+XSUaF2FWQ5hH5Tg9gxBEL2In9vzTq4XvpsSiYRsNz44AP7uvZ//+bA+XXgj3pf//PTP0T9beoAAatwwfMQrW2gwpesCdtb/UlevWOsSPlmX4zwEgt76bSBxu6FkbMuERCiz970bLXNsXxL+u9YAkugrCtrwh4+jn0AOObCTSN+XmwI1Pkw0u1JVh4KKPsSYjDZTBWYIvlZzzHXD0IOjykGK3epRmHzAuSgqxD3vwHEaMzriK/raKwFgDVGvpEXJTtqsMMUuHx8FbYA1TE71jyWC43P+vvK8mMcRu7Wy20FyBkp6x3HzSWN+dUuvW2nCI1az02g/c8MLfeCupn+wlAC57J4E8m5D3mxrZsRpBJ6WRtNpPe0nUxUshkuu2AQoMj8GRdPsa39TbGYcdknZ3B/R2BJSxJfoi5iC/47lkuxsRULLvXDUOeppK2Y7d7/YgdAFilTtmHtY/u7cSNlPd8kzTtW06QCyRbUJfqItYe7O91/tNpk7r5zNwsMXBL5tvxSKpoRP0hx9V135Dkt2UN/mUG2w9XwxhV5arItW3PVnVNZXSqbnK/nej+F73zhFkdzT3bh0CcFK5QJfsEciUDw90zNH5MwuliWz9YoF+I0uw7AfjNick44W3PnCm66rP6ZqpusbY4IbKyVm4UP7UPdlgDL5oMvx3nvpJEToVs+Zu6MaPzIlgGS5/mfn//z/qSFQ01ia6GucWJ7o9Al7VzXvPGRymXw0NX9Rumlmk8g3vuZa0wOrAAAAAAAA"}, {"k": "panycirco", "n": "Pan y Circo", "i": "data:image/webp;base64,UklGRsgBAABXRUJQVlA4ILwBAACQCwCdASpgAGAAPnk8mUkko6KhJzv4SJAPCWUAd3vFtGA/9GHM6kB+wHsgfrM5qLIg9qZXm8NDCovj6Ii03kXY5DuGe7KmGCZGs7jV1UDBj2CDLm61xZKQYAX7LRCLOZNLQdWogAD+/FzQBjf9wF+oLUYsQvDuDGp/9do/ZM/8sE9u7gefosOfoRvznSO0m2heGp2tn3DLMfoViJOnuO39UrigseutfS7w0bdGzaxY40XAWTM++AUzO33We8er0MYyBynVmuB+SbhLNW8iBihVAfyCy+O0TlVIr6/piZp2lAZu/plfHB1pX3c82mL3RaqCBMQCsKAj+DfZiwfiK8+hlLrykzTe4G6YkeWFwP/Jtq0pcC/0kED8+33sSFQxXvV5bWmErJDB3C1e6DqeZ+GxniWpkJMKf7G4OiyRa7eaOGkryj8yGS8Hs/CzrVgZH+n2/hXfIjXPYIkwbYYWRfNi7ZpV8oKv1Fm/lU2ErBfWq54E0qfQn0vZXCaSf8gan0MhjAdmfFjf5VrEX6155M97Y9T1Ad+I8pMHuhmcce+2dL5aN4zvcaZpthkDlcVxAQvh/ictf714kHAAAAA="}, {"k": "lacacharreria", "n": "La Cacharrería", "i": "data:image/webp;base64,UklGRi4EAABXRUJQVlA4ICIEAAAQFQCdASpgAGAAPnk6mEkkoyIhJXVaaJAPCWkAE6A6IDznlqNIf6Hx37wdqH/F73dyL+Yf5r8w/Kt1Arz7/E+Tl4A1AD8e/5n7ivpC/gf935Pvyj+w/9n/DfAN/J/6X/uvWN9lHoofrMUZs3jK7cTXR4JSusNi6agDBZ1ajwDAgfwTiys1diT1lYpIi8vyeW5BD4vkm5I78Mkw6K53KwNjvUd7cMzdaINBCClOa662XwAA/vxc0DUI+x/4TOel7QjlFr+NKw6qka8RG4zyb//lX6EB/gyBged5G6u8eVPVb1Wqdk9VGnImUsIlz5WLjvQeVvn3CWihJH4kc2a49XBEMYz6dKLbrtKaLaYcr4JK/7gbg1zX4S8szhEwB9OfzLiB1txK1agfzWAf5iYpdej4ixJYTTof7otfv1Nnd3zyqIkf5291sWrScHYuOM3nF2fWeX6/+P1wWuGlQkDPimCbLYoG6dn//MDLW1VQBTY5unayv+PZs7/27Bpo7nz0rRtQkBtGd4bR9u/V53TkOXDrtTtK50q7gCGBZqZLDxlMr4Aw7TDJLClptolrlmLgmYBw9R7lMlr8q68W765W0AoHUyM4IbZJvFZDqVgRszQlsCMmtsEvtunRsirWUhr5K/09lbHybZyVmpJNNUrC1VOidxyLnId2tBoPLG449SHzYXFEjyPk4ANSrPoh+oxmShpGq0la3L51+NzuB5W14bEgz3N9Ctke+m9iUA+LAf/+BBqCeRML8fjJ8tbbb6byDJMhmVEVnvF+oF2fhyE9Z/BqN0UJEtqBBGNKqv7jGT9lEwI6XibdwMNYUfhs1Z/+bZ8xdY87kykfVtD1JHPklnJ6UX698dHHFAjGlw1cYkKXRHUZW101r8tORTqj79stD8Y3rPtt2z4P7Jw3sT5QH0Gcm16XHnDv2ObyPapdFHmtgj2j30829svedyH3uXtLAKay7sGhU0n5Ov9+dGeXwGhiv+6HcJ5QV9rTPvjnTxjdadf+SW4/4Khx4Lutl8zJLLVfffM82XGMpgIOG6vYko2YcHSEgT3sSJ/vr+AJ2nz6vu4d9kzqDzdK+L790s8uIT+BDGhBNoXqciY30YyGAnIhDqq2XD+7B/8NezdTbdxcqfKKX/NhD2zsObgdBA7XXnz/SyEFcyKPNj29pWjEt0bWxLvwdKFauD2kQuj04gKA2r2fJiqBhKZyVktikrtCFJMbjhDgYSmPnbjmkBCcR5+I23gAo3S0RlKyYzeJ3t0ePQEXXz7HrWTK/mBo5emz/aCmYYbbLpKhv/NlObwQnIwrNlq+0Y/iNDVTEUsIF1f8PHQJiwnqA8O4rPyp/B9W2nH8kjCz5KVjdSgRscrZ5FEH2/xEYLqibu1Q7yKeg17+OaJO/JoJiaEGqi7j5VjkAAAAAA=="}, {"k": "piazzadipezzi", "n": "Piazza di Pezzi", "i": "data:image/webp;base64,UklGRh4DAABXRUJQVlA4IBIDAAAQEQCdASpgAGAAPnk4mEmkoyIhJHZqEJAPCWUA0zkN7sA3hysgdAT6yUAuTHCD7vMkHeA7Anif9V4i9IFjs9Uf+l8e/097BP6wkBubzejGrwebV39aT3fbgA5aPw/MB+MQgypyUXdyIoKsYaEUsAk6ujQ0Ddtf9pFeKvWt+PxS+cnrVRnePXUzoVRX1WCxq8zQAP75ni/rhbLMc8HjAPl9nQFdvDsgTh+W2MMOX8NIeTKI+B/tNt3XR6H3fcDl4nMeeTrU4DBR/3eilHho6Wf/XAtaWZJ49cOsQIP/nIHmyJKzMFZoCrOtO+3gu+18qPZh2/p0H3ZmbBUiU9n93PdWpXnDtUPkMB1WCmRP1V2/1ysTqb1D/ky5Lif0jm5Lzz80S/WP0BzS8a//Bf3/n5sID4dzOnRGD9Swttplwmww03ffu8xbEE5pLOb8hcUi41tElnE0vZu68mWcevihO/0/loB90p6OFxFYkKLohXQpMYGYjqi2twcLp1Q5utm5apxLc1P/2/iT0gDc+P5YVrpfvVyaR7gl4PJef7KMScTR8l4RNupzyrss/Q0G+NuIV5RuvBz0t+cYn99QoiYTzrm8M+O6LLrtlSPncj/fheqbZf1M+FGkuj8xRq/D6fGEcXyNAPueAx2OkEBzfMf8soFQ+ZfvAn+NhPvEvwDwf28JAWiiNhsado2JcZkdPOM/Qb53ZbOzmCHQim9iJeUh3eF//iffMk/3VZbsl6x2W8cioUEbmOa617Y08YCDuOdiflfCEaZettC9NyAEVS8b6kUj9U0z2KwG18vuP2qI9046jrzl1C5qFQkv7P1JEckk0rgiKofD6isdJmJ8XII/qsoLiVnOFWKi5udAmISO+YQUrx7NXazQGEa7zWP2d9wpcAiOymBFEvFTtuwjm5mmCHvY/+/FOOQ99t7H18pOCzgQNLPbdzafuC8VSamX6e4e2k41D0b3ClM+IXfiy0rYMQ7RnH1ruD9D3bZhYP6hlZOWrMDbruGgaLXRx1FGz707DqPm9katRrc2Ab7euz2kAAAAAAA="}, {"k": "elpumabar", "n": "El Puma Bar", "i": "data:image/webp;base64,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"}, {"k": "casapepemarquez", "n": "Casa Pepe Márquez", "i": "data:image/webp;base64,UklGRkIEAABXRUJQVlA4IDYEAACQFACdASpgAGAAPnk8mUkkoyKhJWjQkA8JQA8gftfmCVrquhJoQG2A5pn9jvcZ0Nn909gD+ff7z2AOk5/ydAd41/O0btrvvk/xnCDKYej+YH1g80D/GejXep0AP5V/ZP99/ZPXfz2/SvsGfrem9JI/asLotcNSf6Nb7OuQ3aKoGb18sf0w76bst9i+IYOjYiqkK680RPbWVwzZpacykYXEyUeZrfF4ip+p/kj8YAD+/TZoBCbxp55/fRtx8l2GnqlbRMgK7qhIcgkA+CxI2nH032+NPXdP5/8ye5QTEoYHQ/EYIDVKFd5spKc7nfwngBpBwaHZ5H1EhwXaE7z3Zdfzx5S45KGyi7GGuY4hzMkhv+u8+bw1rbF6cieliAkdiz/l7bfNH+G8wYDCh0fmeXCRciKx0Os+7pegr4Pe4YnGfDiMei33uyhq+gv59JjYM18S/RmoQwuWw0S78Ww++tSTA+v2HObtT8lIRug2kKqm3jSLXFY9T26Hu4REEZ7DCRUP6JY660Vsru2y8/6CdDTFpn/GK3neSEi1qD1qnjpXXNdhkfOjD2740wr2OD5TKrIcFwxlSmlPhx6TAN2fLeAbEKf/Ub7kHSKjU91tGXPIpx3q1AW1SkNf5VLKLOStO8us5GxX1IuaPjtC4CXkC598yoesaZRWLIax0sBAW9UN/nYe9MtvjWUCmWnL+s+QqvxPDCzu7IyqabncITFHP4vkJiYwXcBbfpKMWf9OkH12MiRtyXN7UoEvT14WONDZ1Bx25YqMCFgAI8tLfObEWdfM3RTvuRJnyk6TjPlVkDO1UYSmUMjRTupBugP0/RHyK/uxY/wI9Jouy+5JS+OoSlu8M/76W+yacbtqxu3T5ADupgU1wFKJTj2+IBL2HzcYUYWM4QnZimEPjDpRS1+IsjwftfM6cjRprEusqHUMEELWJJ7ULa6+36vmI/coQbHIwQmzjddd9PqpOiyNgp7PuS+06CqimT5KBD+L0F7hguEa0zJa1zhhXWWmHeiV3rKCwB5Ckl29j0QMpaZvWACDZlUTqKrJ4APElFhp4z47sDQfF+5CcJLxcS3YgChOZCMfcB7pcGvT7v1adndfIpjEQV0L4oSVMew6u2YjqGPrYqtSddRLRs+b6wklzwEP+PmWeZOK/2hljsVidakCzOKX8NuzxfABhPrIFZKGPfiW6dSP8ak6cXCfPfvjZuqWaF7HSmsnnEgIPPC6/bnZALuMWbVP/MaItMWCx+IC31bjKm/CRjbgXFWN7m7IR/xNY2UQ4AxivEkDhSGo3UjeZjV/qw98Obucx+DNk//MO6fkiFaQAk75ReowI9yMXM9u1k7esszbiONUErmk7qJuRzK3dePPaRqf/Gm2T6RMhLTP/kxsLJtvvqxwH4cpvzTzz1vV1n++jIdV6feMCYHI8i5Oly6TAAAAAAAA"}, {"k": "lagranada", "n": "La Granada", "i": "data:image/webp;base64,UklGRiQDAABXRUJQVlA4IBgDAADQEgCdASpgAGAAPnk2lUekoyIhLjUKAJAPCWIA1Hkq+68IaZivN6ntsB5gOg15JvWNfsZ7AH66emF+3nwUfuD+zntOattCzKu4NaTVog0+wiyibN/AV2SG+zDcQtPxP0zbn9ZqlvDo0cInlBeF9t2sku8s7V+VWZOKjzvY+34WPOp4KN3+kIJr59D27mQgvPOXhSyoyvRbCJz6eDsUFXAA/vz4hl1hLW+FPVfIW+3q5D5mnO5dB3MdvmL157BSpPfe+R3SX//vOdBHWd1nPpBYxiUQu8Q1yUFe9vuziSocoWxuiFjxPZnv8xjB7hM1f+I7ecOFQ2VsqriktYeZoWnlXxaygFgH79OZG+BroeROR0g8gBZyqFbXsTbsIqMqnLd7vlUxUwxqQlMoVxt6GlDU6QE5sntJeZ2SYxnXfUBgrpqMClBHSH4FoS3WAQDPz4Y91msjD4GNAfinsnfkqaIzBOjATe1i4Tz7PKtkFlthm8pU69KlLZISFRKXMoqz/QMZ8pGPeA4eJ0l4fBfnk9A4lWNbL5oa2rCZksEIpLSkTYJxIRmPQVZqpozmNHH3qz1obvIwiFD8Oso2cvNoRpm2GVYH+ZF+rOUnermDu81wzf1WIyEeUbh52C/Sezmrq2V2uuxW5XFTcyAATDNuZaw53oodfgpAu5d78Je7QYa7mQEkyCy4NvI7GoZSKvFkswzK1mF8pCBzWeGAG3OIhwO2vQ7SAMMUCKP9jdPEtSCqbDTwEnhRz+0Djfz+iwi+I2LiMe5iOIKsfFQZ370lzErJFME9pykOP+y3ub8vk0Aw8N7wB7pwI40+bsyAzdY/MB+OxmDYvMzhc5/K641MHLAjyyqabhvRfTiDjJT0+4M+gA8Lk/Mz+kneueXOievoOz+PD5TkwAhCbg5Abx7IP1KicUmJQeSs8wKSz58c2jdnPjwLCG3VG17nEfwxD0Ri9xOs4Ck8PXOVAmfRF7BouG2+fxYgMRMVvR8TkkcXWx7vkimpNAlBDst6/i+CPrHPtuCPFptRattPqCzg1Wx07aVL1FThWagQAAA="}];
+var COL={Historia:"#4d8dff",Reel:"#2fd6a3",Carrusel:"#ff4d5e",Otro:"#6b7385"};
+var DIAS=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+var $=function(i){return document.getElementById(i)};
+var data=null,stamp=0,online=true,loading=false;
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){return null}}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function nk(s){return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"")}
+function tipo(t){t=String(t||"").toLowerCase();return t.indexOf("hist")>=0||t.indexOf("stor")>=0?"Historia":t.indexOf("reel")>=0?"Reel":t.indexOf("carr")>=0?"Carrusel":"Otro"}
+function tname(t){var x=tipo(t);return x==="Otro"?(t||"Post"):x}
+function logoFor(name){var k=nk(name);if(/^rafaelgarcia/.test(k))k="verdelimon";if(!k)return null;var i;for(i=0;i<LOGOS.length;i++)if(LOGOS[i].k===k)return LOGOS[i];var best=null;for(i=0;i<LOGOS.length;i++){var l=LOGOS[i].k;if(k.indexOf(l)>=0||l.indexOf(k)>=0){if(!best||l.length>best.k.length)best=LOGOS[i]}}return best}
+function pdate(d){var m=/^(\d+)\/(\d+)\/(\d+)/.exec(d||"");return m?new Date(2000+ +m[3],+m[2]-1,+m[1]):null}
+function postsOf(L){var out=[];(data.rest||[]).forEach(function(r){var rk=nk(r.n);if(/^rafaelgarcia/.test(rk))rk="verdelimon";if(!rk)return;var m=rk===L.k;if(!m&&(rk.indexOf(L.k)>=0||L.k.indexOf(rk)>=0)){m=true;for(var j=0;j<LOGOS.length;j++){if(LOGOS[j].k!==L.k&&LOGOS[j].k===rk){m=false;break}}}if(m)(r.p||[]).forEach(function(p){out.push(p)})});out.sort(function(a,b){var x=pdate(a.d),y=pdate(b.d);return (x?x.getTime():0)-(y?y.getTime():0)});return out}
+
+function ring(id,pct){var c=$(id),R=+c.getAttribute("r"),C=2*Math.PI*R;pct=Math.max(0,Math.min(100,pct));c.style.strokeDasharray=C;c.style.strokeDashoffset=pct<=0?C:C*(1-pct/100);c.style.opacity=pct<=0?0:1}
+function hm(t){var d=new Date(t);return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)}
+
+function render(){
+  if(!data){return}
+  var rest=data.rest||[],prog=0,pub=0,bytype=[];
+  rest.forEach(function(r){(r.p||[]).forEach(function(p){if(tipo(p.t)==="Historia")return;if(p.ok)pub++;else prog++})});
+  var tot=prog+pub,err=+data.total_err||0;
+  ring("r0",tot?Math.max(4,tot*100/38):0);ring("r1",pub*100/38);ring("r2",err*20);
+  $("big").textContent=tot+"/38";$("k0").textContent=prog;$("k1").textContent=pub;$("k2").textContent=err;
+  var m=$("msg");m.textContent=err?"Hay fallos que revisar":(prog?"Todo en marcha":"Nada programado");m.style.color=err?"var(--red)":(prog?"var(--grn)":"var(--org)");
+  // semana
+  var cnt=[0,1,2,3,4,5,6].map(function(){return{Historia:0,Reel:0,Carrusel:0,Otro:0}});
+  var si=/^(\d+)-(\d+)-(\d+)/.exec(data.sem_ini||"");
+  if(si){var mon=new Date(+si[1],+si[2]-1,+si[3]);$("wk").textContent="Semana del "+("0"+si[3]).slice(-2)+"/"+si[2];
+    rest.forEach(function(r){(r.p||[]).forEach(function(p){var d=pdate(p.d);if(!d)return;var ix=Math.round((d-mon)/864e5);if(ix<0||ix>6)return;cnt[ix][tipo(p.t)]++})})}
+  var mx=1;cnt.forEach(function(c){var t=c.Historia+c.Reel+c.Carrusel+c.Otro;if(t>mx)mx=t});
+  var unit=Math.min(22,Math.floor(118/mx)),h="",dh="";
+  cnt.forEach(function(c,i){var t=0,s="";["Historia","Reel","Carrusel","Otro"].forEach(function(k){if(c[k]){t+=c[k];s+='<div class="seg" style="height:'+(c[k]*unit-2)+'px;background:'+COL[k]+'"></div>'}});
+    h+='<div class="bar">'+s+(t?'<em style="bottom:'+(t*unit+2)+'px">'+t+'</em>':"")+'</div>';dh+="<span>"+DIAS[i]+"</span>"});
+  $("bars").innerHTML=h;$("days").innerHTML=dh;
+  // fallos
+  var f=data.fallos||[];$("fall").innerHTML=f.length?'<h2>Fallos</h2><div class="list">'+f.map(function(x){var L=logoFor(x.r);return '<div class="row">'+(L?'<img class="lg" src="'+L.i+'" alt="">':'')+'<div class="tx"><div class="nm">'+esc(L?L.n:x.r)+'</div><div class="ds er">'+esc(x.d)+'</div></div></div>'}).join("")+'</div>':"";
+  // proximas
+  var pe=data.pendientes||[];$("prox").innerHTML=pe.length?pe.map(function(x){var L=logoFor(x.r),ty=tipo(x.t);return '<div class="row">'+(L?'<img class="lg" src="'+L.i+'" alt="">':'')+'<div class="tx"><div class="nm">'+esc(L?L.n:x.r)+'</div><div class="ds">'+esc(x.d)+' '+esc(x.h)+'</div></div><span class="chip" style="background:'+COL[ty]+'">'+esc(tname(x.t))+'</span></div>'}).join(""):'<div class="empty">No hay publicaciones próximas</div>';
+  // hoy
+  var hp=data.hoy_pub||[];$("hcnt").textContent=hp.length?(hp.length+(hp.length===1?" publicada hoy":" publicadas hoy")):"";
+  $("hlist").innerHTML=hp.length?hp.map(function(x){var L=logoFor(x.r),ty=tipo(x.t);return '<div class="row">'+(L?'<img class="lg" src="'+L.i+'" alt="">':'<div class="lg"></div>')+'<div class="tx"><div class="nm">'+esc(L?L.n:x.r)+'</div></div><span class="chip" style="background:'+COL[ty]+'">'+esc(tname(x.t))+'</span></div>'}).join(""):'<div class="empty">Hoy aún no hay nada publicado</div>';
+  // restaurantes
+  var rows="",vistos=0;
+  LOGOS.forEach(function(L,i){var ps=postsOf(L),np=0,nok=0;ps.forEach(function(p){if(tipo(p.t)==="Historia")return;np++;if(p.ok)nok++});if(ps.length)vistos++;
+    rows+='<div class="row tap" data-i="'+i+'"><img class="lg" src="'+L.i+'" alt=""><div class="tx"><div class="nm">'+esc(L.n)+'</div><div class="ds">'+(ps.length?('<span class="ok">'+nok+' publicadas</span> · <span class="pe">'+(np-nok)+' programadas</span>'):'Sin publicaciones esta semana')+'</div></div><span class="pill">'+ps.length+'</span></div>'});
+  $("rlist").innerHTML=rows;$("rcnt").textContent=LOGOS.length+" restaurantes · toca uno para ver su semana";
+  status();
+}
+function status(){var s=$("sub");if(!data){return}
+  s.innerHTML='<span class="dot'+(online?'':' off')+'"></span>'+(online?"Actualizado ":"Sin conexión · datos de ")+hm(stamp)}
+function banner(t,err){$("ban").innerHTML=t?'<div class="banner'+(err?' err':'')+'">'+esc(t)+'</div>':""}
+
+function load(){
+  if(loading)return;var tk=ls("gm_token");if(!tk){openSet(true);return}
+  loading=true;$("bref").style.opacity=".5";
+  var ctl=window.AbortController?new AbortController():null,to=setTimeout(function(){ctl&&ctl.abort()},20000);
+  fetch(API,{headers:{"X-Hermes-Token":tk},signal:ctl?ctl.signal:undefined}).then(function(r){
+    if(r.status===401||r.status===403){throw {auth:1}}
+    if(!r.ok)throw new Error("http "+r.status);return r.json()}).then(function(j){
+    if(!j||!j.data)throw new Error("sin datos");data=j.data;stamp=Date.now();online=true;ls("gm_cache",JSON.stringify({t:stamp,d:data}));banner("");render()
+  }).catch(function(e){
+    if(e&&e.auth){banner("La clave no es correcta. Revísala en Ajustes.",true);openSet(true);return}
+    online=false;if(data){banner("Sin conexión. Se muestran los últimos datos guardados.");status()}else banner("No se pueden cargar los datos. Comprueba la conexión.",true)
+  }).then(function(){clearTimeout(to);loading=false;$("bref").style.opacity=""});
+}
+
+function sheet(html){$("shin").innerHTML=html;$("sh").classList.add("on")}
+function closeSheet(){$("sh").classList.remove("on")}
+function openSet(first){
+  sheet('<h3>'+(first?'Clave de acceso':'Ajustes')+'</h3><p>'+(first?'Escribe la clave de tu sistema. Se guarda solo en este teléfono.':'Cambia la clave de acceso guardada en este teléfono.')+'</p><input id="tk" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Clave" value="'+esc(ls("gm_token")||"")+'"><button class="btn" id="tks">Guardar</button>'+(first?'':'<button class="btn sec" id="tkc">Cerrar</button>'));
+  $("tks").onclick=function(){var v=$("tk").value.trim();if(!v)return;ls("gm_token",v);closeSheet();load()};
+  if($("tkc"))$("tkc").onclick=closeSheet;
+}
+function openRest(i){var L=LOGOS[i],ps=postsOf(L);
+  var h='<div class="hd"><img src="'+L.i+'" alt=""><div><h3>'+esc(L.n)+'</h3><div class="ds" style="color:var(--mut);font-size:13.5px">Esta semana</div></div></div>';
+  if(!ps.length)h+='<div class="empty">Sin publicaciones esta semana</div>';
+  else h+='<div class="list">'+ps.map(function(p){var d=pdate(p.d),ty=tipo(p.t);var dn=d?DIAS[(d.getDay()+6)%7]+" "+("0"+d.getDate()).slice(-2)+"/"+("0"+(d.getMonth()+1)).slice(-2):esc(p.d);
+    return '<div class="row"><div class="tx"><div class="nm">'+dn+'</div><div class="ds '+(p.ok?'ok':'pe')+'">'+(p.ok?'Publicado':'Programado')+'</div></div><span class="chip" style="background:'+COL[ty]+'">'+esc(tname(p.t))+'</span></div>'}).join("")+'</div>';
+  h+='<button class="btn sec" id="shc">Cerrar</button>';sheet(h);$("shc").onclick=closeSheet}
+
+document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){document.querySelectorAll("nav button").forEach(function(x){x.classList.toggle("on",x===b)});["res","rest","hoy"].forEach(function(t){$("s-"+t).classList.toggle("on",t===b.dataset.t)});window.scrollTo(0,0);if(b.dataset.t==="res"&&data)render()}});
+$("rlist").onclick=function(e){var r=e.target.closest(".tap");if(r)openRest(+r.dataset.i)};
+$("sh").onclick=function(e){if(e.target===$("sh")&&ls("gm_token"))closeSheet()};
+$("bref").onclick=load;$("bset").onclick=function(){openSet(false)};
+document.addEventListener("visibilitychange",function(){if(!document.hidden&&Date.now()-stamp>30000)load()});
+setInterval(function(){if(!document.hidden)load()},60000);
+try{var c=JSON.parse(ls("gm_cache")||"null");if(c&&c.d){data=c.d;stamp=c.t;online=false;render()}}catch(e){}
+load();
+if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("sw.js").catch(function(){})}
+})();
+</script>
+</body>
+</html>
