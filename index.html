@@ -114,6 +114,16 @@ nav button.on svg{stroke:var(--blu)}
 .pc .sv{margin-top:8px;width:100%;appearance:none;border:0;border-radius:12px;padding:12px;font:inherit;font-weight:650;background:var(--blu);color:#fff}
 .bd{position:absolute;top:2px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:9px;background:var(--red);color:#fff;font-size:11.5px;font-weight:700;display:grid;place-items:center;padding:0 5px}
 nav button{position:relative}
+#mic{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;border:0;background:var(--blu);color:#fff;display:grid;place-items:center;box-shadow:0 6px 20px rgba(0,0,0,.5);z-index:30}
+#mic svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#mic.rec{background:var(--red);animation:pul 1.1s ease-in-out infinite}
+#mic.bus{background:#39414d}
+@keyframes pul{50%{box-shadow:0 0 0 12px rgba(255,77,94,.18)}}
+#vp{position:fixed;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(144px + env(safe-area-inset-bottom,0px));background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;z-index:31;max-height:50vh;overflow:auto;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+#vp .q{font-size:13px;color:var(--mut);margin-bottom:6px}
+#vp .a{font-size:17px;line-height:1.45;overflow-wrap:anywhere}
+#vp .r{display:flex;gap:8px;margin-top:10px}
+#vp .r button{appearance:none;border:0;border-radius:10px;padding:8px 14px;background:#1d2128;color:var(--fg);font:inherit;font-size:14px}
 @media (prefers-reduced-motion:reduce){.rv{transition:none}}
 </style>
 </head>
@@ -158,6 +168,8 @@ nav button{position:relative}
     <div class="grid" id="rlist"></div>
   </section>
 
+  <button id="mic" aria-label="Preguntar por voz"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+  <div id="vp" hidden></div>
   <section id="s-apr">
     <div class="cnt" id="acnt"></div>
     <div id="alist"></div>
@@ -284,6 +296,26 @@ $("alist").onclick=function(e){var b=e.target.closest("button");if(!b)return;var
   if(a==="ok"||a==="no"){var key=row+":"+a;if(armed&&armed.key===key){clearTimeout(armed.t);armed=null;decide(row,a,"",b);return}
     if(armed){clearTimeout(armed.t);armed.b.textContent=armed.b.dataset.a==="ok"?"Aprobar":"Rechazar";armed.b.classList.remove("arm")}
     b.textContent="¿Seguro?";b.classList.add("arm");armed={key:key,b:b,t:setTimeout(function(){b.textContent=a==="ok"?"Aprobar":"Rechazar";b.classList.remove("arm");armed=null},4000)}}};
+
+var VOZ="https://n8n.gastromentor.com/webhook/voz-app",mr=null,chunks=[],stream=null,lastA="";
+function say(s){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(s);u.lang="es-ES";u.rate=1.02;speechSynthesis.speak(u)}catch(e){}}
+function showVp(q,a,loading){var v=$("vp");v.hidden=false;v.innerHTML='<div class="q">'+(q?esc(q):"")+'</div><div class="a">'+esc(a)+'</div>'+(loading?"":'<div class="r"><button id="vr">Repetir</button><button id="vx">Cerrar</button></div>');
+  if(!loading){$("vr").onclick=function(){say(lastA)};$("vx").onclick=function(){speechSynthesis.cancel();v.hidden=true}}}
+$("mic").onclick=function(){var b=$("mic");
+  if(b.classList.contains("bus"))return;
+  if(mr&&mr.state==="recording"){try{speechSynthesis.speak(new SpeechSynthesisUtterance(""))}catch(e){}mr.stop();return}
+  var tk=getTok();if(!tk){banner("Falta la clave: ábrela en Ajustes",true);return}
+  if(!navigator.mediaDevices||!window.MediaRecorder){banner("Este navegador no permite grabar voz",true);return}
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){stream=s;chunks=[];
+    var mt=MediaRecorder.isTypeSupported("audio/mp4")?"audio/mp4":(MediaRecorder.isTypeSupported("audio/webm")?"audio/webm":"");
+    mr=mt?new MediaRecorder(s,{mimeType:mt}):new MediaRecorder(s);
+    mr.ondataavailable=function(e){if(e.data&&e.data.size)chunks.push(e.data)};
+    mr.onstop=function(){stream.getTracks().forEach(function(t){t.stop()});b.classList.remove("rec");b.classList.add("bus");
+      var type=mr.mimeType||mt||"audio/webm",ext=type.indexOf("mp4")>=0?"m4a":"webm",blob=new Blob(chunks,{type:type});
+      if(blob.size<2000){b.classList.remove("bus");showVp("","No te he oído. Prueba otra vez.");return}
+      showVp("","Pensando…",true);var fd=new FormData();fd.append("audio",blob,"voz."+ext);
+      fetch(VOZ,{method:"POST",headers:{"X-Hermes-Token":tk},body:fd}).then(function(r){if(!r.ok)throw new Error("http "+r.status);return r.json()}).then(function(j){lastA=j.respuesta||"";b.classList.remove("bus");showVp(j.pregunta?("Tú: "+j.pregunta):"",lastA);say(lastA)}).catch(function(){b.classList.remove("bus");showVp("","No he podido contestar. Inténtalo de nuevo.")})};
+    mr.start();b.classList.add("rec");$("vp").hidden=true}).catch(function(){banner("Permite el micrófono para usar la voz",true)})};
 function sheet(html){$("shin").innerHTML=html;$("sh").classList.add("on")}
 function closeSheet(){$("sh").classList.remove("on")}
 function openSet(first){
