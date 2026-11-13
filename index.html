@@ -85,6 +85,15 @@ nav button.on svg{stroke:var(--blu)}
 .hd{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .hd img{width:52px;height:52px;border-radius:50%;object-fit:cover}
 .cnt{font-size:13.5px;color:var(--mut);margin:0 2px 10px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px 8px}
+.gi{display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;min-width:0;cursor:pointer}
+.gi:active{opacity:.7}
+.gi .lw{position:relative;width:min(25vw,100px);aspect-ratio:1}
+.gi svg{position:absolute;inset:-6px;width:calc(100% + 12px);height:calc(100% + 12px);transform:rotate(-90deg)}
+.gi svg circle{fill:none;stroke-width:4;stroke-linecap:round}
+.gi img{width:100%;height:100%;border-radius:50%;object-fit:cover;background:#000;display:block}
+.gi b{font-size:13px;font-weight:600;line-height:1.15;max-width:100%}
+.gi span{font-size:11.5px;color:var(--mut);min-height:14px}
 @media (prefers-reduced-motion:reduce){.rv{transition:none}}
 </style>
 </head>
@@ -126,7 +135,7 @@ nav button.on svg{stroke:var(--blu)}
 
   <section id="s-rest">
     <div class="cnt" id="rcnt"></div>
-    <div class="list" id="rlist"></div>
+    <div class="grid" id="rlist"></div>
   </section>
 
   <section id="s-hoy">
@@ -189,19 +198,22 @@ function render(){
   // hoy
   var hp=data.hoy_pub||[];$("hcnt").textContent=hp.length?(hp.length+(hp.length===1?" publicada hoy":" publicadas hoy")):"";
   $("hlist").innerHTML=hp.length?hp.map(function(x){var L=logoFor(x.r),ty=tipo(x.t);return '<div class="row">'+(L?'<img class="lg" src="'+L.i+'" alt="">':'<div class="lg"></div>')+'<div class="tx"><div class="nm">'+esc(L?L.n:x.r)+'</div></div><span class="chip" style="background:'+COL[ty]+'">'+esc(tname(x.t))+'</span></div>'}).join(""):'<div class="empty">Hoy aún no hay nada publicado</div>';
-  // restaurantes
-  var rows="",vistos=0;
-  LOGOS.forEach(function(L,i){var ps=postsOf(L),np=0,nok=0;ps.forEach(function(p){if(tipo(p.t)==="Historia")return;np++;if(p.ok)nok++});if(ps.length)vistos++;
-    rows+='<div class="row tap" data-i="'+i+'"><img class="lg" src="'+L.i+'" alt=""><div class="tx"><div class="nm">'+esc(L.n)+'</div><div class="ds">'+(ps.length?('<span class="ok">'+nok+' publicadas</span> · <span class="pe">'+(np-nok)+' programadas</span>'):'Sin publicaciones esta semana')+'</div></div><span class="pill">'+ps.length+'</span></div>'});
-  $("rlist").innerHTML=rows;$("rcnt").textContent=LOGOS.length+" restaurantes · toca uno para ver su semana";
+  renderRest();
   status();
 }
+function renderRest(){var anyd=!!(data&&data.rest),C=2*Math.PI*46,rows="";
+  function arc(f,col){f=Math.max(0,Math.min(1,f));return f>0?'<circle cx="50" cy="50" r="46" stroke="'+col+'" stroke-dasharray="'+(C*f)+' '+C+'"/>':""}
+  LOGOS.forEach(function(L,i){var ps=anyd?postsOf(L):[],np=0,nok=0;ps.forEach(function(p){if(tipo(p.t)==="Historia")return;np++;if(p.ok)nok++});
+    rows+='<div class="gi" data-i="'+i+'"><div class="lw"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" stroke="#1a1d24"/>'+arc(np/2,"#ff7a2f")+arc(nok/2,"#2fd6a3")+'</svg><img src="'+L.i+'" alt=""></div><b>'+esc(L.n)+'</b><span>'+(anyd?(nok+" de "+np+" publicadas"):"")+'</span></div>'});
+  $("rlist").innerHTML=rows;$("rcnt").textContent=anyd?"Toca un restaurante para ver su semana":"Toca un restaurante · conecta para ver sus datos"}
+function getTok(){var v=ls("gm_token");if(v)return v;try{var m=document.cookie.match(/(?:^|; )gm_token=([^;]*)/);if(m){v=decodeURIComponent(m[1]);ls("gm_token",v);return v}}catch(e){}return null}
+function setTok(v){ls("gm_token",v);try{document.cookie="gm_token="+encodeURIComponent(v)+"; max-age=31536000; path=/; Secure; SameSite=Strict"}catch(e){}try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}}
 function status(){var s=$("sub");if(!data){return}
   s.innerHTML='<span class="dot'+(online?'':' off')+'"></span>'+(online?"Actualizado ":"Sin conexión · datos de ")+hm(stamp)}
 function banner(t,err){$("ban").innerHTML=t?'<div class="banner'+(err?' err':'')+'">'+esc(t)+'</div>':""}
 
 function load(){
-  if(loading)return;var tk=ls("gm_token");if(!tk){openSet(true);return}
+  if(loading)return;var tk=getTok();if(!tk){openSet(true);return}
   loading=true;$("bref").style.opacity=".5";
   var ctl=window.AbortController?new AbortController():null,to=setTimeout(function(){ctl&&ctl.abort()},20000);
   fetch(API,{headers:{"X-Hermes-Token":tk},signal:ctl?ctl.signal:undefined}).then(function(r){
@@ -217,8 +229,8 @@ function load(){
 function sheet(html){$("shin").innerHTML=html;$("sh").classList.add("on")}
 function closeSheet(){$("sh").classList.remove("on")}
 function openSet(first){
-  sheet('<h3>'+(first?'Clave de acceso':'Ajustes')+'</h3><p>'+(first?'Escribe la clave de tu sistema. Se guarda solo en este teléfono.':'Cambia la clave de acceso guardada en este teléfono.')+'</p><input id="tk" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Clave" value="'+esc(ls("gm_token")||"")+'"><button class="btn" id="tks">Guardar</button>'+(first?'':'<button class="btn sec" id="tkc">Cerrar</button>'));
-  $("tks").onclick=function(){var v=$("tk").value.trim();if(!v)return;ls("gm_token",v);closeSheet();load()};
+  sheet('<h3>'+(first?'Clave de acceso':'Ajustes')+'</h3><p>'+(first?'Escribe la clave de tu sistema. Se guarda solo en este teléfono.':'Cambia la clave de acceso guardada en este teléfono.')+'</p><input id="tk" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Clave" value="'+esc(getTok()||"")+'"><button class="btn" id="tks">Guardar</button>'+(first?'':'<button class="btn sec" id="tkc">Cerrar</button>'));
+  $("tks").onclick=function(){var v=$("tk").value.trim();if(!v)return;setTok(v);closeSheet();load()};
   if($("tkc"))$("tkc").onclick=closeSheet;
 }
 function openRest(i){var L=LOGOS[i],ps=postsOf(L);
@@ -229,12 +241,12 @@ function openRest(i){var L=LOGOS[i],ps=postsOf(L);
   h+='<button class="btn sec" id="shc">Cerrar</button>';sheet(h);$("shc").onclick=closeSheet}
 
 document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){document.querySelectorAll("nav button").forEach(function(x){x.classList.toggle("on",x===b)});["res","rest","hoy"].forEach(function(t){$("s-"+t).classList.toggle("on",t===b.dataset.t)});window.scrollTo(0,0);if(b.dataset.t==="res"&&data)render()}});
-$("rlist").onclick=function(e){var r=e.target.closest(".tap");if(r)openRest(+r.dataset.i)};
-$("sh").onclick=function(e){if(e.target===$("sh")&&ls("gm_token"))closeSheet()};
+$("rlist").onclick=function(e){var r=e.target.closest(".gi");if(r)openRest(+r.dataset.i)};
+$("sh").onclick=function(e){if(e.target===$("sh"))closeSheet()};
 $("bref").onclick=load;$("bset").onclick=function(){openSet(false)};
 document.addEventListener("visibilitychange",function(){if(!document.hidden&&Date.now()-stamp>30000)load()});
 setInterval(function(){if(!document.hidden)load()},60000);
-ring("r0",0);ring("r1",0);ring("r2",0);
+ring("r0",0);ring("r1",0);ring("r2",0);renderRest();
 try{var c=JSON.parse(ls("gm_cache")||"null");if(c&&c.d){data=c.d;stamp=c.t;online=false;render()}}catch(e){}
 load();
 if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("sw.js").catch(function(){})}
