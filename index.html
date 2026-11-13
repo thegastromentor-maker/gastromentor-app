@@ -115,6 +115,8 @@ nav button.on svg{stroke:var(--blu)}
 .bd{position:absolute;top:2px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:9px;background:var(--red);color:#fff;font-size:11.5px;font-weight:700;display:grid;place-items:center;padding:0 5px}
 nav button{position:relative}
 #vb{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 67px);height:56px;display:flex;align-items:center;justify-content:center;background:rgba(10,12,16,.92);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--line);z-index:6}
+#vb{transition:transform .22s ease,opacity .22s}
+#vb.hid{transform:translateY(60px);opacity:0;pointer-events:none}
 #mic{appearance:none;border:0;height:40px;min-width:170px;padding:0 20px;border-radius:999px;background:var(--blu);color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:9px;font:inherit;font-size:15.5px;font-weight:650}
 #mic svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 #mic .tx::before{content:"Preguntar por voz"}
@@ -373,6 +375,8 @@ function renderSem(){var box=$("sem");if(!box)return;
 $("sem").onclick=function(e){var b=e.target.closest(".cv");if(!b)return;var x=semItems[+b.dataset.j];if(!x)return;var d=pdate(x.p.d);
   var dn=d?DIAS[(d.getDay()+6)%7]+" "+("0"+d.getDate()).slice(-2)+"/"+("0"+(d.getMonth()+1)).slice(-2):esc(x.p.d);
   sheet('<div class="hd">'+(x.L?'<img src="'+x.L.i+'" alt="">':'')+'<div><h3>'+esc(x.n)+'</h3><div class="ds" style="color:var(--mut);font-size:13.5px">'+dn+'</div></div></div><div class="list"><div class="row"><div class="tx"><div class="nm">'+esc(tname(x.p.t))+'</div><div class="ds '+(x.p.ok?'ok':'pe')+'">'+(x.p.ok?'Publicado':'Programado')+'</div></div><span class="chip" style="background:'+COL[x.ty]+'">'+esc(tname(x.p.t))+'</span></div></div><button class="btn sec" id="shc">Cerrar</button>');$("shc").onclick=closeSheet};
+var lastY=0;window.addEventListener("scroll",function(){var y=window.pageYOffset||0,vb=$("vb"),m=$("mic");if(!vb)return;if(m.classList.contains("rec")||m.classList.contains("bus")){vb.classList.remove("hid");lastY=y;return}
+  if(y>lastY+6&&y>40)vb.classList.add("hid");else if(y<lastY-6||y<=40)vb.classList.remove("hid");lastY=y},{passive:true});
 function sheet(html){$("shin").innerHTML=html;$("sh").classList.add("on")}
 function closeSheet(){$("sh").classList.remove("on")}
 function openSet(first){
